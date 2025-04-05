@@ -7,13 +7,20 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { EditorState } from '@codemirror/state';
-import { EditorView, keymap, lineNumbers } from '@codemirror/view';
+import {
+  EditorView,
+  lineNumbers,
+  highlightActiveLineGutter,
+  highlightActiveLine,
+  keymap,
+} from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { json } from '@codemirror/lang-json';
+import { basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
-import { json } from '@codemirror/lang-json';
-import { oneDark } from '@codemirror/theme-one-dark';
 
 @Component({
   selector: 'app-codemirror-wrapper',
@@ -47,7 +54,10 @@ export class CodeMirrorWrapperComponent implements OnDestroy, AfterViewInit {
     const startState = EditorState.create({
       doc: this.code,
       extensions: [
+        basicSetup,
         lineNumbers(),
+        highlightActiveLineGutter(),
+        highlightActiveLine(),
         keymap.of(defaultKeymap),
         this.getLanguageSupport(),
         this.theme === 'dark' ? oneDark : [],

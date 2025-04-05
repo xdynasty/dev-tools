@@ -24,13 +24,11 @@ export class AppComponent {
     this.activeTabIndex = e.index;
   }
 
-  initialCode = `// TypeScript code example
-interface User {
-  name: string;
-  age: number;
-}
-
-function greet(user: User): string {
-  return \`Hello, \${user.name}!\`;
+  initialCode = `{
+  "name": "Example",
+  "data": {
+    "nested": true,
+    "array": [1, 2, 3]
+  }
 }`;
 }
