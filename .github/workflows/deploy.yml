@@ -5,24 +5,22 @@ name: Deploy to GH Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: latest
-        cache: 'npm'
-    - run: npm install -g @angular/cli
-    - run: ng add angular-cli-ghpages --skip-confirmation
-    - run: npm ci
-    - run: npm test -- --watch=false --browsers=ChromeHeadless
-    - run: ng deploy
-
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: "npm"
+      - run: npm install -g @angular/cli
+      - run: npm ci
+      - run: npm test -- --watch=false --browsers=ChromeHeadless
+      - run: ng deploy
