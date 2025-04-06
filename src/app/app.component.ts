@@ -459,4 +459,16 @@ export class AppComponent {
       return '{}';
     }
   }
+
+  stringify(): void {
+    try {
+      // Parse input first to validate it's proper JSON
+      const parsed = JSON.parse(this.inputCode);
+      // Convert to string with escaped quotes
+      this.outputCode = JSON.stringify(JSON.stringify(parsed));
+    } catch (error) {
+      console.error('Error converting JSON to string:', error);
+      this.outputCode = 'Invalid JSON input';
+    }
+  }
 }
