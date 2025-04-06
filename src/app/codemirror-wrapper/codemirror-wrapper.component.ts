@@ -5,6 +5,8 @@ import {
   OnDestroy,
   ViewChild,
   AfterViewInit,
+  model,
+  OnChanges,
 } from '@angular/core';
 import { EditorState } from '@codemirror/state';
 import {
@@ -25,24 +27,26 @@ import { css } from '@codemirror/lang-css';
 @Component({
   selector: 'app-codemirror-wrapper',
   template: `<div #editor></div>`,
-  styles: [
-    `
-      div {
-        height: 100%;
-      }
-    `,
-  ],
 })
-export class CodeMirrorWrapperComponent implements OnDestroy, AfterViewInit {
+export class CodeMirrorWrapperComponent
+  implements OnDestroy, AfterViewInit, OnChanges
+{
   @ViewChild('editor') editorElement?: ElementRef<HTMLDivElement>;
-  @Input() code = '// Your code here\n';
+  code = model('');
   @Input() language = 'javascript';
   @Input() theme: 'light' | 'dark' = 'light';
+  @Input() editable = true;
 
   private editorView?: EditorView;
 
   ngOnDestroy() {
     this.editorView?.destroy();
+  }
+
+  ngOnChanges() {
+    if (this.editorView) {
+      this.updateCode(this.code());
+    }
   }
 
   ngAfterViewInit() {
@@ -51,8 +55,18 @@ export class CodeMirrorWrapperComponent implements OnDestroy, AfterViewInit {
   }
 
   private initializeEditor() {
+    const customTheme = EditorView.theme({
+      '&': {
+        height: '85vh', // Set the desired height
+        width: '100%', // Optional: Set the width
+      },
+      '.cm-scroller': {
+        overflow: 'auto', // Ensure scrolling works if content overflows
+      },
+    });
+
     const startState = EditorState.create({
-      doc: this.code,
+      doc: this.code(),
       extensions: [
         basicSetup,
         lineNumbers(),
@@ -61,10 +75,14 @@ export class CodeMirrorWrapperComponent implements OnDestroy, AfterViewInit {
         keymap.of(defaultKeymap),
         this.getLanguageSupport(),
         this.theme === 'dark' ? oneDark : [],
+        !this.editable ? EditorView.editable.of(false) : [],
+        // allows the editor to retain select function while still being uneditable
+        EditorView.contentAttributes.of({ tabindex: '0' }),
+        customTheme,
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
-            this.code = update.state.doc.toString();
+            this.code.set(update.state.doc.toString());
           }
         }),
       ],
@@ -98,11 +116,23 @@ export class CodeMirrorWrapperComponent implements OnDestroy, AfterViewInit {
 
   public updateCode(newCode: string) {
     if (this.editorView) {
+      // Store the current selection
+      const currentSelection = this.editorView.state.selection;
+
+      // Calculate new selection position
+      const oldLength = this.editorView.state.doc.length;
+      const newLength = newCode.length;
+
       this.editorView.dispatch({
         changes: {
           from: 0,
-          to: this.editorView.state.doc.length,
+          to: oldLength,
           insert: newCode,
+        },
+        // Preserve selection by moving it if necessary
+        selection: {
+          anchor: Math.min(currentSelection.main.anchor, newLength),
+          head: Math.min(currentSelection.main.head, newLength),
         },
       });
     }

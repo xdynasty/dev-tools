@@ -1,0 +1,16 @@
+.minimize-content,
+.json-content,
+.diff-content {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  grid-template-columns: 5fr 1.5fr 5fr;
+  padding: 2px;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

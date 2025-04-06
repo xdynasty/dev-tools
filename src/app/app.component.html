@@ -49,23 +49,72 @@
   <mat-tab-group
     animationDuration="0ms"
     (selectedTabChange)="onTabChange($event)"
+    mat-stretch-tabs="true"
+    mat-align-tabs="center"
   >
-    <mat-tab label="My Info">My Info</mat-tab>
-    <mat-tab label="Multiline To Singleline Converter"
-      >Multiline To Singleline Converter</mat-tab
-    >
-    <mat-tab label="JSON">JSON</mat-tab>
+    <mat-tab label="My Info">
+      <div class="info-container">
+        <div
+          *ngFor="let section of objectKeys(clientInfo)"
+          class="info-section"
+        >
+          <h3>{{ section | titlecase }}</h3>
+          <pre>{{ clientInfo[section] | json }}</pre>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Minimize" class="codemirror-tab-content">
+      <div class="minimize-content">
+        <app-codemirror-wrapper
+          [(code)]="inputCode"
+          [language]="'json'"
+          [theme]="'dark'"
+        />
+        <div class="button-container">
+          <button mat-flat-button (click)="minimize()">Minimize</button>
+        </div>
+        <app-codemirror-wrapper
+          [code]="outputCode"
+          [language]="'json'"
+          [theme]="'dark'"
+          [editable]="false"
+        /></div
+    ></mat-tab>
+    <mat-tab label="JSON" class="codemirror-tab-content"
+      ><div class="json-content">
+        <app-codemirror-wrapper
+          [(code)]="inputCode"
+          [language]="'json'"
+          [theme]="'dark'"
+        />
+        <div class="button-container">
+          <button mat-flat-button (click)="parseJson()">Parse</button>
+        </div>
+        <app-codemirror-wrapper
+          [code]="outputCode"
+          [language]="'json'"
+          [theme]="'dark'"
+          [editable]="false"
+        /></div
+    ></mat-tab>
+    <mat-tab label="Diff" class="codemirror-tab-content"
+      ><div class="diff-content">
+        <app-codemirror-wrapper
+          [(code)]="inputCode"
+          [language]="'json'"
+          [theme]="'dark'"
+        />
+        <div class="button-container">
+          <button mat-flat-button (click)="parseJson()">Diff</button>
+        </div>
+        <app-codemirror-wrapper
+          [code]="outputCode"
+          [language]="'json'"
+          [theme]="'dark'"
+          [editable]="false"
+        /></div
+    ></mat-tab>
   </mat-tab-group>
-  <div class="content">
-    @if (activeTabIndex === 1 || activeTabIndex === 2) {
-      <app-codemirror-wrapper
-        [code]="initialCode"
-        [language]="'json'"
-        [theme]="'dark'"
-      />
-      <div></div>
-    }
-  </div>
 </main>
 
 <router-outlet />
