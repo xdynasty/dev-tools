@@ -19,16 +19,10 @@ import { MergeView } from '@codemirror/merge';
   template: `<div #diffContainer class="diff-container"></div>`,
   styles: [
     `
-      .diff-container {
-        flex: 1;
-        min-height: 0;
-        border: 1px solid #333;
-        border-radius: 4px;
-        height: 100%;
-      }
-      .cm-mergeView {
-        height: 800px;
-      }
+      // .cm-mergeView {
+      //   height: 85vh;
+      //   overflow: scroll;
+      // }
     `,
   ],
 })
@@ -45,11 +39,40 @@ export class DiffViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   private setupMergeView() {
+    const customTheme = EditorView.theme({
+      '&': {
+        height: '100%', // Set the desired height
+        width: '100%', // Optional: Set the width
+      },
+      '.cm-mergeView & .cm-scroller, .cm-mergeView &': {
+        height: '85vh !important',
+      },
+      '.cm-scroller': {
+        overflow: 'auto', // Ensure scrolling works if content overflows
+      },
+    });
+
+    // Add scroll sync extension
+    const scrollSync = EditorView.updateListener.of((update) => {
+      if (update.view && this.mergeView && update.docChanged === false) {
+        const isViewA = update.view === this.mergeView.a;
+        const sourceView = isViewA ? this.mergeView.a : this.mergeView.b;
+        const targetView = isViewA ? this.mergeView.b : this.mergeView.a;
+
+        const sourceScroll = sourceView.scrollDOM.scrollTop;
+        if (targetView.scrollDOM.scrollTop !== sourceScroll) {
+          targetView.scrollDOM.scrollTop = sourceScroll;
+        }
+      }
+    });
     const sharedExtensions = [
       basicSetup,
       oneDark,
       EditorView.editable.of(true),
       EditorState.allowMultipleSelections.of(true),
+      customTheme,
+      EditorView.lineWrapping,
+      // scrollSync,
     ];
 
     const sampleTextA = `# Example Document
