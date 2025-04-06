@@ -407,6 +407,8 @@ export class AppComponent implements OnInit, OnDestroy {
         : null,
   };
 
+  showCopied: boolean = false;
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   objectKeys(obj: ClientInfo): (keyof ClientInfo)[] {
@@ -548,6 +550,21 @@ export class AppComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Error getting local IPs:', err);
       return [];
+    }
+  }
+
+  async copyToClipboard(text: number, event?: KeyboardEvent) {
+    // Only handle Enter or Space key, or click events
+    if (event && !['Enter', 'Space'].includes(event.code)) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text.toString());
+      this.showCopied = true;
+      setTimeout(() => (this.showCopied = false), 2000); // Hide after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
   }
 

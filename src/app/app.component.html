@@ -132,7 +132,22 @@
             <strong>GMT:</strong>
             {{ currentTime | date: timeFormats.gmt : "GMT" }}
           </p>
-          <p><strong>Epoch Milliseconds:</strong> {{ currentTime }}</p>
+          <p>
+            <strong>Epoch Milliseconds:</strong>
+            <span
+              class="clickable"
+              role="button"
+              tabindex="0"
+              (click)="copyToClipboard(currentTime)"
+              (keydown)="copyToClipboard(currentTime, $event)"
+              title="Click or press Enter to copy"
+            >
+              {{ currentTime }}
+              <span class="copied-feedback" [class.show]="showCopied"
+                >Copied!</span
+              >
+            </span>
+          </p>
         </div>
 
         <form #timeForm="ngForm">

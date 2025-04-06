@@ -29,3 +29,35 @@ footer {
   justify-content: center;
   align-items: center;
 }
+
+.clickable {
+  cursor: pointer;
+  color: var(--bright-blue);
+  position: relative;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+    outline: none;
+  }
+
+  .copied-feedback {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 8px;
+    background: var(--gray-900);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+
+    &.show {
+      opacity: 1;
+    }
+  }
+}
