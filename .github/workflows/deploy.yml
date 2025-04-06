@@ -20,7 +20,7 @@ jobs:
       with:
         node-version: latest
         cache: 'npm'
-    - run: npm install -g @angular/cli
+    - run: npm install -g @angular/cli --skip-confirmation
     - run: ng add angular-cli-ghpages
     - run: npm ci
     - run: npm test
