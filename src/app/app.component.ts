@@ -17,6 +17,13 @@ interface NetworkInformation {
   onchange?: () => void;
 }
 
+interface BatteryInfo {
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+  level: number;
+}
+
 declare global {
   interface Navigator {
     connection?: NetworkInformation;
@@ -122,6 +129,7 @@ interface ClientInfo {
     pathname: string;
     online: boolean;
   };
+  battery: Promise<BatteryInfo> | null;
 }
 
 @Component({
@@ -358,6 +366,15 @@ export class AppComponent {
             pathname: '',
             online: false,
           },
+    battery:
+      typeof navigator !== 'undefined' && navigator.getBattery
+        ? navigator.getBattery().then((battery) => ({
+            charging: battery.charging,
+            chargingTime: battery.chargingTime,
+            dischargingTime: battery.dischargingTime,
+            level: battery.level,
+          }))
+        : null,
   };
 
   objectKeys(obj: ClientInfo): (keyof ClientInfo)[] {
