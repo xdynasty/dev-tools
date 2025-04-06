@@ -1,14 +1,26 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ViewEncapsulation,
+  PLATFORM_ID,
+  Inject,
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CodeMirrorWrapperComponent } from './codemirror-wrapper/codemirror-wrapper.component';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { Observable, of } from 'rxjs';
 import { DiffViewerComponent } from './diff-viewer/diff-viewer.component';
 
+import { ErrorStateMatcher } from '@angular/material/core';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
 interface NetworkInformation {
   readonly downlink: number;
   readonly effectiveType: string;
@@ -146,10 +158,14 @@ interface ClientInfo {
     MatButtonModule,
     CommonModule,
     DiffViewerComponent,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    DatePipe,
   ],
   encapsulation: ViewEncapsulation.None,
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'dev-tools';
   activeTabIndex = 0;
   outputCode = '';
@@ -160,6 +176,17 @@ export class AppComponent implements OnInit {
     "array": [1, 2, 3]
   }
   }`;
+  epochMilliseconds = new Date().getTime();
+  timeFormats = {
+    long: 'yyyy-MM-dd HH:mm:ss',
+    gmt: "yyyy-MM-dd HH:mm:ss 'GMT'",
+    twelve: 'yyyy-MM-dd hh:mm:ss a', // Add 12-hour format with AM/PM
+    short: 'short',
+    medium: 'medium',
+  };
+
+  currentTime: number = Date.now(); // Changed to use milliseconds
+  private timeInterval?: number;
 
   clientInfo: ClientInfo = {
     browser: {
@@ -380,6 +407,8 @@ export class AppComponent implements OnInit {
         : null,
   };
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   objectKeys(obj: ClientInfo): (keyof ClientInfo)[] {
     return Object.keys(obj) as (keyof ClientInfo)[];
   }
@@ -523,14 +552,27 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit() {
-    try {
-      const localIPs = await this.getLocalIPs();
-      this.clientInfo.location = {
-        ...this.clientInfo.location,
-        localIPs,
-      };
-    } catch (error) {
-      console.error('Error initializing IP detection:', error);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const localIPs = await this.getLocalIPs();
+        this.clientInfo.location = {
+          ...this.clientInfo.location,
+          localIPs,
+        };
+
+        // Update timer to use milliseconds
+        this.timeInterval = window.setInterval(() => {
+          this.currentTime = Date.now();
+        }, 1000);
+      } catch (error) {
+        console.error('Error initializing:', error);
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
     }
   }
 }

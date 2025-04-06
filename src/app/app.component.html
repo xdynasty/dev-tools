@@ -116,8 +116,51 @@
         <app-diff-viewer></app-diff-viewer>
       </div>
     </mat-tab>
+    <mat-tab label="Time">
+      <div class="time-content">
+        <div class="current-time">
+          <h3>Current Time</h3>
+          <p>
+            <strong>Local (24-hour):</strong>
+            {{ currentTime | date: timeFormats.long }}
+          </p>
+          <p>
+            <strong>Local (12-hour):</strong>
+            {{ currentTime | date: timeFormats.twelve }}
+          </p>
+          <p>
+            <strong>GMT:</strong>
+            {{ currentTime | date: timeFormats.gmt : "GMT" }}
+          </p>
+          <p><strong>Epoch Milliseconds:</strong> {{ currentTime }}</p>
+        </div>
+
+        <form #timeForm="ngForm">
+          <mat-form-field appearance="outline">
+            <mat-label>Epoch Milliseconds</mat-label>
+            <input
+              type="number"
+              matInput
+              name="epochMilliseconds"
+              [(ngModel)]="epochMilliseconds"
+            />
+          </mat-form-field>
+          <div class="time-results">
+            <h3>Converted Time</h3>
+            <p>
+              <strong>Local Time:</strong>
+              {{ epochMilliseconds | date: timeFormats.long }}
+            </p>
+            <p>
+              <strong>GMT:</strong>
+              {{ epochMilliseconds | date: timeFormats.gmt : "GMT" }}
+            </p>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
   </mat-tab-group>
 </main>
-<footer>© 2011 xdynasty</footer>
+<footer>© 2011 XD</footer>
 
 <router-outlet />
