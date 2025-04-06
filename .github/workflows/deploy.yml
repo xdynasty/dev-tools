@@ -21,6 +21,9 @@ jobs:
           node-version: latest
           cache: "npm"
       - run: npm ci
-      - run: npm install -g @angular/cli
+      - run: npm i -g @angular/cli
+      - run: npm i angular-cli-ghpages
       - run: npm test -- --watch=false --browsers=ChromeHeadless
-      - run: ng deploy --repo=https://github.com/xdynasty/dev-tools.git
+      - run: ng deploy --base-href=/dev-tools/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
