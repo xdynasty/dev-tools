@@ -20,7 +20,6 @@ jobs:
         with:
           node-version: latest
           cache: "npm"
-      - run: npm install -g @angular/cli
       - run: npm ci
       - run: npm test -- --watch=false --browsers=ChromeHeadless
       - run: ng deploy
