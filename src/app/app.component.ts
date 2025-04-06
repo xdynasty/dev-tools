@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { Observable, of } from 'rxjs';
+import { DiffViewerComponent } from './diff-viewer/diff-viewer.component';
 
 interface NetworkInformation {
   readonly downlink: number;
@@ -143,6 +144,7 @@ interface ClientInfo {
     CodeMirrorWrapperComponent,
     MatButtonModule,
     CommonModule,
+    DiffViewerComponent,
   ],
   encapsulation: ViewEncapsulation.None,
 })
@@ -383,6 +385,9 @@ export class AppComponent {
 
   @ViewChild(CodeMirrorWrapperComponent)
   codeMirrorWrapper?: CodeMirrorWrapperComponent;
+
+  @ViewChild(DiffViewerComponent)
+  diffViewer?: DiffViewerComponent;
 
   onTabChange(e: MatTabChangeEvent) {
     this.activeTabIndex = e.index;

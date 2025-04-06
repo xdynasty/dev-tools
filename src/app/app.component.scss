@@ -1,11 +1,13 @@
 .minimize-content,
-.json-content,
-.diff-content {
+.json-content {
   display: grid;
   align-items: center;
   justify-content: center;
   grid-template-columns: 5fr 1.5fr 5fr;
   padding: 2px;
+}
+.diff-content {
+  height: 80vh;
 }
 
 .button-container {

@@ -111,23 +111,11 @@
           [editable]="false"
         /></div
     ></mat-tab>
-    <mat-tab label="Diff" class="codemirror-tab-content"
-      ><div class="diff-content">
-        <app-codemirror-wrapper
-          [(code)]="inputCode"
-          [language]="'json'"
-          [theme]="'dark'"
-        />
-        <div class="button-container">
-          <button mat-flat-button (click)="parseJson()">Diff</button>
-        </div>
-        <app-codemirror-wrapper
-          [code]="outputCode"
-          [language]="'json'"
-          [theme]="'dark'"
-          [editable]="false"
-        /></div
-    ></mat-tab>
+    <mat-tab label="Diff">
+      <div class="diff-content">
+        <app-diff-viewer></app-diff-viewer>
+      </div>
+    </mat-tab>
   </mat-tab-group>
 </main>
 
