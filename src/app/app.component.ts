@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
+import { Observable, of } from 'rxjs';
 
 interface NetworkInformation {
   readonly downlink: number;
@@ -86,23 +87,29 @@ interface ClientInfo {
       navigationStart: number;
     };
   };
-  // webgl: {
-  //   supported: boolean;
-  //   renderer?: string;
-  //   vendor?: string;
-  //   webglVersion?: string;
-  //   contextAttributes?: WebGLContextAttributes;
-  //   extensions?: string[];
-  // };
-  // media: {
-  //   audioSupported: string[];
-  //   videoSupported: string[];
-  //   mediaDevices: {
-  //     audioinput: number;
-  //     videoinput: number;
-  //     audiooutput: number;
-  //   };
-  // };
+  webgl: {
+    supported: boolean;
+    renderer?: string;
+    vendor?: string;
+    webglVersion?: string;
+    contextAttributes?: WebGLContextAttributes;
+    extensions?: string[] | null;
+  };
+  media: {
+    audioSupported: string[];
+    videoSupported: string[];
+    mediaDevices:
+      | Promise<{
+          audioinput: number;
+          videoinput: number;
+          audiooutput: number;
+        }>
+      | Observable<{
+          audioinput: number;
+          videoinput: number;
+          audiooutput: number;
+        }>;
+  };
   storage: {
     localStorage: boolean;
     sessionStorage: boolean;
@@ -227,78 +234,97 @@ export class AppComponent {
             }
           : undefined,
     },
-    // webgl: (() => {
-    //   try {
-    //     const canvas = document.createElement('canvas');
-    //     const gl = (canvas.getContext('webgl') ||
-    //       canvas.getContext(
-    //         'experimental-webgl',
-    //       )) as WebGLRenderingContext | null;
-    //     if (!gl) return { supported: false };
+    webgl: (() => {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = (canvas.getContext('webgl') ||
+          canvas.getContext(
+            'experimental-webgl',
+          )) as WebGLRenderingContext | null;
 
-    //     const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    //     return {
-    //       supported: true,
-    //       renderer: debugInfo
-    //         ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-    //         : undefined,
-    //       vendor: debugInfo
-    //         ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)
-    //         : undefined,
-    //       webglVersion: gl.getParameter(gl.VERSION),
-    //       contextAttributes: gl.getContextAttributes(),
-    //       extensions: gl.getSupportedExtensions(),
-    //     };
-    //   } catch (e) {
-    //     return { supported: false };
-    //   }
-    // })(),
-    // media: {
-    //   audioSupported: (() => {
-    //     const audio = document.createElement('audio');
-    //     return ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac'].filter(
-    //       (type) => {
-    //         try {
-    //           return audio.canPlayType(type) !== '';
-    //         } catch (e) {
-    //           return false;
-    //         }
-    //       },
-    //     );
-    //   })(),
-    //   videoSupported: (() => {
-    //     const video = document.createElement('video');
-    //     return ['video/mp4', 'video/webm', 'video/ogg'].filter((type) => {
-    //       try {
-    //         return video.canPlayType(type) !== '';
-    //       } catch (e) {
-    //         return false;
-    //       }
-    //     });
-    //   })(),
-    //   mediaDevices:
-    //     typeof navigator !== 'undefined' && navigator.mediaDevices
-    //       ? navigator.mediaDevices
-    //           .enumerateDevices()
-    //           .then((devices) => ({
-    //             audioinput: devices.filter((d) => d.kind === 'audioinput')
-    //               .length,
-    //             videoinput: devices.filter((d) => d.kind === 'videoinput')
-    //               .length,
-    //             audiooutput: devices.filter((d) => d.kind === 'audiooutput')
-    //               .length,
-    //           }))
-    //           .catch(() => ({
-    //             audioinput: 0,
-    //             videoinput: 0,
-    //             audiooutput: 0,
-    //           }))
-    //       : {
-    //           audioinput: 0,
-    //           videoinput: 0,
-    //           audiooutput: 0,
-    //         },
-    // },
+        if (!gl) {
+          return {
+            supported: false,
+            renderer: undefined,
+            vendor: undefined,
+            webglVersion: undefined,
+            contextAttributes: undefined,
+            extensions: undefined,
+          };
+        }
+
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        return {
+          supported: true,
+          renderer: debugInfo
+            ? (gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) as string)
+            : undefined,
+          vendor: debugInfo
+            ? (gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) as string)
+            : undefined,
+          webglVersion: gl.getParameter(gl.VERSION) as string,
+          contextAttributes: gl.getContextAttributes() || undefined,
+          extensions: gl.getSupportedExtensions(),
+        };
+      } catch (e) {
+        return {
+          supported: false,
+          renderer: undefined,
+          vendor: undefined,
+          webglVersion: undefined,
+          contextAttributes: undefined,
+          extensions: undefined,
+        };
+      }
+    })(),
+    media: {
+      audioSupported: (() => {
+        if (typeof document === 'undefined') return [];
+        const audio = document.createElement('audio');
+        return ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac'].filter(
+          (type) => {
+            try {
+              return audio.canPlayType(type) !== '';
+            } catch (e) {
+              return false;
+            }
+          },
+        );
+      })(),
+      videoSupported: (() => {
+        if (typeof document === 'undefined') return [];
+        const video = document.createElement('video');
+        return ['video/mp4', 'video/webm', 'video/ogg'].filter((type) => {
+          try {
+            return video.canPlayType(type) !== '';
+          } catch (e) {
+            return false;
+          }
+        });
+      })(),
+      mediaDevices:
+        typeof navigator !== 'undefined' && navigator.mediaDevices
+          ? navigator.mediaDevices
+              .enumerateDevices()
+              .then((devices) => ({
+                audioinput: devices.filter((d) => d.kind === 'audioinput')
+                  .length,
+                videoinput: devices.filter((d) => d.kind === 'videoinput')
+                  .length,
+                audiooutput: devices.filter((d) => d.kind === 'audiooutput')
+                  .length,
+              }))
+              .catch(() => ({
+                audioinput: 0,
+                videoinput: 0,
+                audiooutput: 0,
+              }))
+          : of({
+              audioinput: 0,
+              videoinput: 0,
+              audiooutput: 0,
+            }),
+    },
     storage: {
       localStorage: (() => {
         try {
@@ -393,6 +419,27 @@ export class AppComponent {
     } catch (error) {
       console.error('Invalid or malformed JSON string:', error);
       this.outputCode = 'Invalid or malformed JSON string';
+    }
+  }
+  getCircularReplacer() {
+    const seen = new WeakSet();
+    return (key: string, value: any) => {
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) {
+          return '[Circular]';
+        }
+        seen.add(value);
+      }
+      return value;
+    };
+  }
+
+  safeStringify(obj: any): string {
+    try {
+      return JSON.stringify(obj, this.getCircularReplacer(), 2);
+    } catch (error) {
+      console.error('JSON stringify error:', error);
+      return '{}';
     }
   }
 }

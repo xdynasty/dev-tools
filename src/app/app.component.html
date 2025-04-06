@@ -59,7 +59,20 @@
           class="info-section"
         >
           <h3>{{ section | titlecase }}</h3>
-          <pre>{{ clientInfo[section] | json }}</pre>
+          <ng-container *ngIf="section === 'media'; else regularSection">
+            <pre>{{
+              safeStringify({
+                audioSupported: clientInfo[section].audioSupported,
+                videoSupported: clientInfo[section].videoSupported,
+                mediaDevices:
+                  (clientInfo[section].mediaDevices | async) ||
+                  clientInfo[section].mediaDevices,
+              })
+            }}</pre>
+          </ng-container>
+          <ng-template #regularSection>
+            <pre>{{ safeStringify(clientInfo[section]) }}</pre>
+          </ng-template>
         </div>
       </div>
     </mat-tab>
