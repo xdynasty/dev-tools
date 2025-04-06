@@ -129,6 +129,7 @@ interface ClientInfo {
     port: string;
     pathname: string;
     online: boolean;
+    localIPs?: string[];
   };
   battery: Promise<BatteryInfo> | null;
 }
@@ -148,7 +149,7 @@ interface ClientInfo {
   ],
   encapsulation: ViewEncapsulation.None,
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'dev-tools';
   activeTabIndex = 0;
   outputCode = '';
@@ -474,6 +475,62 @@ export class AppComponent {
     } catch (error) {
       console.error('Error converting JSON to string:', error);
       this.outputCode = 'Invalid JSON input';
+    }
+  }
+
+  private async getLocalIPs(): Promise<string[]> {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || !window.RTCPeerConnection) {
+      console.warn('RTCPeerConnection is not available');
+      return [];
+    }
+
+    const ips = new Set<string>();
+
+    try {
+      const pc = new window.RTCPeerConnection({
+        iceCandidatePoolSize: 1,
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
+
+      pc.addEventListener('icecandidate', (e) => {
+        if (!e.candidate) return;
+
+        const ipMatch =
+          /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g.exec(
+            e.candidate.candidate,
+          );
+
+        if (ipMatch) {
+          ips.add(ipMatch[1]);
+        }
+      });
+
+      // Create a data channel to trigger candidate generation
+      pc.createDataChannel('');
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // Wait for all candidates
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      pc.close();
+      return Array.from(ips);
+    } catch (err) {
+      console.error('Error getting local IPs:', err);
+      return [];
+    }
+  }
+
+  async ngOnInit() {
+    try {
+      const localIPs = await this.getLocalIPs();
+      this.clientInfo.location = {
+        ...this.clientInfo.location,
+        localIPs,
+      };
+    } catch (error) {
+      console.error('Error initializing IP detection:', error);
     }
   }
 }
