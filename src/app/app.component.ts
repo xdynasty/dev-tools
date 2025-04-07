@@ -460,15 +460,17 @@ export class AppComponent implements OnInit, OnDestroy {
             .replace(/^["'](.*)["']$/, '$1');
           result = JSON.parse(unescaped);
         } catch (e2) {
-          throw new Error('Invalid JSON format');
+          const error = e2 as Error;
+          this.outputCode = `Error: ${error.message}`;
+          return;
         }
       }
 
       // Pretty print the result
       this.outputCode = JSON.stringify(result, null, 2);
     } catch (error) {
-      console.error('Invalid or malformed JSON string:', error);
-      this.outputCode = 'Invalid or malformed JSON string';
+      const err = error as Error;
+      this.outputCode = `Error: ${err.message}`;
     }
   }
 
