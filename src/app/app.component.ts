@@ -445,36 +445,33 @@ export class AppComponent implements OnInit, OnDestroy {
 
   parseJson(): void {
     try {
-      // First unescape the string if it contains escaped quotes
-      // eslint-disable-next-line no-useless-escape
-      let inputStringUnescaped = this.inputCode.replace(/\\\"/g, '"');
-      if (
-        inputStringUnescaped.length > 2 &&
-        inputStringUnescaped.charAt(0) === '"' &&
-        inputStringUnescaped.charAt(inputStringUnescaped.length - 1) === '"'
-      ) {
-        inputStringUnescaped = inputStringUnescaped.substring(
-          1,
-          inputStringUnescaped.length - 1,
-        );
+      let result;
+      const input = this.inputCode.trim();
+
+      // First try to parse as regular JSON
+      try {
+        result = JSON.parse(input);
+      } catch (e1) {
+        // If that fails, try to handle escaped JSON string
+        try {
+          // Handle string that might be double-escaped
+          const unescaped = input
+            .replace(/\\"/g, '"')
+            .replace(/^["'](.*)["']$/, '$1');
+          result = JSON.parse(unescaped);
+        } catch (e2) {
+          throw new Error('Invalid JSON format');
+        }
       }
 
-      // Try to parse the unescaped string
-      try {
-        const parsedJson = JSON.parse(inputStringUnescaped);
-        this.outputCode = JSON.stringify(parsedJson, null, 2);
-      } catch (e) {
-        // If parsing fails, try to parse with double unescaping
-        // eslint-disable-next-line no-useless-escape
-        inputStringUnescaped = inputStringUnescaped.replace(/\\\"/g, '"');
-        const parsedJson = JSON.parse(inputStringUnescaped);
-        this.outputCode = JSON.stringify(parsedJson, null, 2);
-      }
+      // Pretty print the result
+      this.outputCode = JSON.stringify(result, null, 2);
     } catch (error) {
       console.error('Invalid or malformed JSON string:', error);
       this.outputCode = 'Invalid or malformed JSON string';
     }
   }
+
   getCircularReplacer() {
     const seen = new WeakSet();
     return (key: string, value: any) => {
