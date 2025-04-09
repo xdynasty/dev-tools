@@ -520,26 +520,24 @@ export class AppComponent implements OnInit, OnDestroy {
         return;
       }
 
-      let result;
-      // Check if input starts and ends with quotes
-      if (input.startsWith('"') && input.endsWith('"')) {
-        try {
-          // First unescape the entire string
-          const unescaped = JSON.parse(input);
-          // Then parse the unescaped content as JSON
-          result = JSON.parse(unescaped);
-        } catch (e) {
-          const error = e as Error;
-          this.outputCode = `Error: ${error.message}`;
-          return;
-        }
-      } else {
-        // Try parsing as regular JSON
-        result = JSON.parse(input);
+      // Check if input is a JSON string (starts and ends with quotes)
+      if (!input.startsWith('"') || !input.endsWith('"')) {
+        this.outputCode =
+          'Error: Input must be a JSON string starting and ending with double quotes';
+        return;
       }
 
-      // Pretty print the result
-      this.outputCode = JSON.stringify(result, null, 2);
+      try {
+        // First parse the string to handle escaped quotes
+        const parsed = JSON.parse(input);
+        // Then parse the resulting string as JSON
+        const result = JSON.parse(parsed);
+        // Pretty print the result
+        this.outputCode = JSON.stringify(result, null, 2);
+      } catch (e) {
+        const error = e as Error;
+        this.outputCode = `Error: ${error.message}`;
+      }
     } catch (error) {
       const err = error as Error;
       this.outputCode = `Error: ${err.message}`;
