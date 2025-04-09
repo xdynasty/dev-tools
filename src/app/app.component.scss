@@ -62,6 +62,20 @@ footer {
   }
 }
 
+.current-time p,
+.time-results p {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 350px;
+  margin: 8px 0;
+
+  strong {
+    flex-shrink: 0;
+    margin-right: 30px;
+  }
+}
+
 .time-form {
   margin-top: 40px;
 }
