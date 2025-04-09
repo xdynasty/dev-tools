@@ -407,7 +407,7 @@ export class AppComponent implements OnInit, OnDestroy {
         : null,
   };
 
-  showCopied: boolean = false;
+  showCopied = false;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
@@ -443,37 +443,6 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  parseJson(): void {
-    try {
-      let result;
-      const input = this.inputCode.trim();
-
-      // First try to parse as regular JSON
-      try {
-        result = JSON.parse(input);
-      } catch (e1) {
-        // If that fails, try to handle escaped JSON string
-        try {
-          // Handle string that might be double-escaped
-          const unescaped = input
-            .replace(/\\"/g, '"')
-            .replace(/^["'](.*)["']$/, '$1');
-          result = JSON.parse(unescaped);
-        } catch (e2) {
-          const error = e2 as Error;
-          this.outputCode = `Error: ${error.message}`;
-          return;
-        }
-      }
-
-      // Pretty print the result
-      this.outputCode = JSON.stringify(result, null, 2);
-    } catch (error) {
-      const err = error as Error;
-      this.outputCode = `Error: ${err.message}`;
-    }
-  }
-
   getCircularReplacer() {
     const seen = new WeakSet();
     return (key: string, value: any) => {
@@ -505,6 +474,75 @@ export class AppComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error converting JSON to string:', error);
       this.outputCode = 'Invalid JSON input';
+    }
+  }
+
+  formatJson(): void {
+    try {
+      const input = this.inputCode.trim();
+      let result;
+
+      // Handle empty input
+      if (!input) {
+        this.outputCode = '';
+        return;
+      }
+
+      try {
+        // First try parsing as a JSON string (handles escaped quotes)
+        if (input.startsWith('"') && input.endsWith('"')) {
+          const unescaped = input.slice(1, -1).replace(/\\"/g, '"');
+          result = JSON.parse(unescaped);
+        } else {
+          // Try parsing as regular JSON
+          result = JSON.parse(input);
+        }
+
+        // Pretty print the result
+        this.outputCode = JSON.stringify(result, null, 2);
+      } catch (e) {
+        const error = e as Error;
+        this.outputCode = `Error: ${error.message}`;
+      }
+    } catch (error) {
+      const err = error as Error;
+      this.outputCode = `Error: ${err.message}`;
+    }
+  }
+
+  parseJson(): void {
+    try {
+      const input = this.inputCode.trim();
+
+      // Handle empty input
+      if (!input) {
+        this.outputCode = '';
+        return;
+      }
+
+      let result;
+      // Check if input starts and ends with quotes
+      if (input.startsWith('"') && input.endsWith('"')) {
+        try {
+          // First unescape the entire string
+          const unescaped = JSON.parse(input);
+          // Then parse the unescaped content as JSON
+          result = JSON.parse(unescaped);
+        } catch (e) {
+          const error = e as Error;
+          this.outputCode = `Error: ${error.message}`;
+          return;
+        }
+      } else {
+        // Try parsing as regular JSON
+        result = JSON.parse(input);
+      }
+
+      // Pretty print the result
+      this.outputCode = JSON.stringify(result, null, 2);
+    } catch (error) {
+      const err = error as Error;
+      this.outputCode = `Error: ${err.message}`;
     }
   }
 

@@ -108,6 +108,7 @@
         <div class="button-container">
           <button mat-flat-button (click)="parseJson()">Parse</button>
           <button mat-flat-button (click)="stringify()">Stringify</button>
+          <button mat-flat-button (click)="formatJson()">Format</button>
         </div>
         <app-codemirror-wrapper
           [code]="outputCode"
@@ -134,7 +135,7 @@
             {{ currentTime | date: timeFormats.twelve }}
           </p>
           <p>
-            <strong>GMT:</strong>
+            <strong>GMT/UTC:</strong>
             {{ currentTime | date: timeFormats.gmt : "GMT" }}
           </p>
           <p>
@@ -168,11 +169,15 @@
           <div class="time-results">
             <h3>Converted Time</h3>
             <p>
-              <strong>Local:</strong>
+              <strong>Local (24-hour):</strong>
               {{ epochMilliseconds | date: timeFormats.long }}
             </p>
             <p>
-              <strong>GMT:</strong>
+              <strong>Local (12-hour):</strong>
+              {{ epochMilliseconds | date: timeFormats.twelve }}
+            </p>
+            <p>
+              <strong>GMT/UTC:</strong>
               {{ epochMilliseconds | date: timeFormats.gmt : "GMT" }}
             </p>
           </div>
